@@ -80,7 +80,6 @@ function ResidualConnectionVisualizer() {
           const finalShortcut = (variables?.finalShortcut as number[] | undefined) || shortcut;
           const residualSum = (variables?.residualSum as number[] | undefined) || [];
           const output = (variables?.output as number[] | undefined) || [];
-          const phase = (variables?.phase as string) || "init";
 
           return (
             <div className="space-y-4">

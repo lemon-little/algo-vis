@@ -11,50 +11,6 @@ export interface ConvolutionState {
   dotProduct?: number;
 }
 
-function convolve2D(
-  input: number[][],
-  kernel: number[][],
-  stride: number,
-  padding: number
-): { output: number[][]; paddedInput: number[][] } {
-  const inputH = input.length;
-  const inputW = input[0]?.length || 0;
-  const kernelH = kernel.length;
-  const kernelW = kernel[0]?.length || 0;
-
-  const paddedH = inputH + 2 * padding;
-  const paddedW = inputW + 2 * padding;
-  const paddedInput: number[][] = Array(paddedH)
-    .fill(0)
-    .map(() => Array(paddedW).fill(0));
-
-  for (let i = 0; i < inputH; i++) {
-    for (let j = 0; j < inputW; j++) {
-      paddedInput[i + padding][j + padding] = input[i][j];
-    }
-  }
-
-  const outputH = Math.floor((paddedH - kernelH) / stride) + 1;
-  const outputW = Math.floor((paddedW - kernelW) / stride) + 1;
-  const output: number[][] = Array(outputH)
-    .fill(0)
-    .map(() => Array(outputW).fill(0));
-
-  for (let i = 0; i < outputH; i++) {
-    for (let j = 0; j < outputW; j++) {
-      let sum = 0;
-      for (let ki = 0; ki < kernelH; ki++) {
-        for (let kj = 0; kj < kernelW; kj++) {
-          sum += paddedInput[i * stride + ki][j * stride + kj] * kernel[ki][kj];
-        }
-      }
-      output[i][j] = Number(sum.toFixed(4));
-    }
-  }
-
-  return { output, paddedInput };
-}
-
 export function generateConvolutionSteps(
   input: number[][],
   kernel: number[][],
