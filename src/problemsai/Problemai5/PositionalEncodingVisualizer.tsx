@@ -216,7 +216,7 @@ function ExplainOutput({ seqLen, dModel, peMatrix }: { seqLen: number; dModel: n
   );
 
   return (
-    <div className="bg-white rounded-lg border border-emerald-200 p-5 shadow-sm space-y-4">
+    <div className="bg-white rounded-lg border border-emerald-200 p-5 shadow-sm space-y-4 overflow-hidden">
       <div className="flex items-center gap-2">
         <span className="text-xs font-bold px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">输出说明</span>
         <h4 className="text-sm font-semibold text-gray-900">PE 矩阵如何被使用？</h4>
@@ -232,8 +232,7 @@ function ExplainOutput({ seqLen, dModel, peMatrix }: { seqLen: number; dModel: n
 
       {/* 三列矩阵图示 */}
       <div className="overflow-x-auto">
-        <div className="flex items-start gap-3 min-w-max text-[10px]">
-          {[
+        <div className="flex items-start gap-3 min-w-max text-[10px]">          {[
             {
               title: "Token Embedding",
               subtitle: "（模型学习）",
@@ -330,7 +329,7 @@ function PEMatrixGrid({ matrix, currentPos, currentDimPair, phase }: PEMatrixGri
   const hidden = dModel - displayCols;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+    <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm overflow-hidden">
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-semibold text-gray-800">位置编码矩阵 PE</h4>
         <span className="text-xs px-2 py-0.5 bg-purple-50 text-purple-700 rounded-full font-mono">
@@ -511,6 +510,28 @@ function PositionalEncodingVisualizer() {
               : parseInt(String(input.dModel), 10) || DEFAULT_D_MODEL;
           const dModelEven = dModel % 2 === 0 ? dModel : dModel - 1;
           return generatePositionalEncodingSteps(seqLen, Math.max(2, dModelEven));
+        },
+        customStepVariables: (variables) => {
+          // 过滤掉 peMatrix（已在热力图中展示），只显示标量变量
+          const SKIP = new Set(["peMatrix"]);
+          const entries = Object.entries(variables).filter(([k]) => !SKIP.has(k));
+          if (entries.length === 0) return null;
+          return (
+            <>
+              <p className="text-sm font-semibold text-gray-700 mb-2">当前变量：</p>
+              <div className="grid grid-cols-2 gap-3">
+                {entries.map(([key, value]) => (
+                  <div key={key} className="text-sm">
+                    <span className="font-mono text-blue-600 font-semibold">{key}</span>
+                    <span className="text-gray-500"> = </span>
+                    <span className="font-mono text-gray-800 font-semibold">
+                      {JSON.stringify(value)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          );
         },
         inputTypes: [
           { type: "number", key: "seqLen", label: "序列长度 seq_len" },
