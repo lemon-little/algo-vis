@@ -58,6 +58,15 @@ export const aiProblemCoreIdeas: Record<number, ProblemCoreIdeaConfig> = {
       "保证自回归生成合理性",
     ],
   },
+  10007: {
+    idea: "FFN 通过「扩展-激活-压缩」两层全连接结构，对每个 Token 独立进行非线性特征变换：先将维度扩展 4 倍，ReLU 引入稀疏激活，再压缩回原始维度，为 Transformer 提供逐位置的非线性表达能力。",
+    color: "emerald",
+    features: [
+      "两层线性变换夹 ReLU 激活",
+      "d_ff ≈ 4×d_model 扩展维度",
+      "逐 Token 独立计算，无位置交互",
+    ],
+  },
   10026: {
     idea: "卷积核在输入特征图上滑动，每个位置计算局部区域与卷积核的点积，从而提取局部空间特征。",
     color: "blue",
