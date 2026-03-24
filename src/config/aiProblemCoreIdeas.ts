@@ -85,6 +85,15 @@ export const aiProblemCoreIdeas: Record<number, ProblemCoreIdeaConfig> = {
       "Add & Norm 是每个 Transformer 块的标配",
     ],
   },
+  10010: {
+    idea: "Query 来自 Decoder，Key/Value 来自 Encoder，通过 softmax(QKᵀ/√d_k)·V 计算 Decoder 每个位置对 Encoder 全局上下文的动态关注权重，是 Seq2Seq 任务的核心桥梁。",
+    color: "amber",
+    features: [
+      "Q/K/V 跨序列来源",
+      "动态关注 Encoder 上下文",
+      "Seq2Seq 任务的核心",
+    ],
+  },
   10026: {
     idea: "卷积核在输入特征图上滑动，每个位置计算局部区域与卷积核的点积，从而提取局部空间特征。",
     color: "blue",
