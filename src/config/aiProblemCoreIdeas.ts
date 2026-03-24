@@ -76,6 +76,15 @@ export const aiProblemCoreIdeas: Record<number, ProblemCoreIdeaConfig> = {
       "不依赖批次大小，NLP 首选",
     ],
   },
+  10009: {
+    idea: "将子层输入 x 通过跳跃连接直接加到子层输出 F(x)，再送入层归一化，形成梯度高速公路，让子层只需学习残差映射，从而支持 Transformer 堆叠数十乃至上百层。",
+    color: "rose",
+    features: [
+      "跳跃路径使梯度畅通反传",
+      "子层学习残差而非完整映射",
+      "Add & Norm 是每个 Transformer 块的标配",
+    ],
+  },
   10026: {
     idea: "卷积核在输入特征图上滑动，每个位置计算局部区域与卷积核的点积，从而提取局部空间特征。",
     color: "blue",
