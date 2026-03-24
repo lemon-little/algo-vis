@@ -67,6 +67,15 @@ export const aiProblemCoreIdeas: Record<number, ProblemCoreIdeaConfig> = {
       "逐 Token 独立计算，无位置交互",
     ],
   },
+  10008: {
+    idea: "在单个样本的所有特征维度上计算均值和方差，标准化后通过可学习参数 γ/β 恢复表达能力，使模型在任意批次大小下都能稳定训练。",
+    color: "cyan",
+    features: [
+      "沿特征维度归一化（非批次维度）",
+      "γ/β 参数恢复表达能力",
+      "不依赖批次大小，NLP 首选",
+    ],
+  },
   10026: {
     idea: "卷积核在输入特征图上滑动，每个位置计算局部区域与卷积核的点积，从而提取局部空间特征。",
     color: "blue",
