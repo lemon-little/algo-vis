@@ -49,6 +49,15 @@ export const aiProblemCoreIdeas: Record<number, ProblemCoreIdeaConfig> = {
       "与嵌入直接相加，无需额外参数",
     ],
   },
+  10006: {
+    idea: "在缩放点积注意力基础上，用下三角掩码矩阵将上三角（未来位置）的分数置为 -∞，确保 Softmax 后每个位置只能看到当前及之前的 Token，是 GPT 等自回归解码器的核心机制。",
+    color: "rose",
+    features: [
+      "下三角掩码禁止看到未来",
+      "-∞ 使 Softmax 权重为零",
+      "保证自回归生成合理性",
+    ],
+  },
   10026: {
     idea: "卷积核在输入特征图上滑动，每个位置计算局部区域与卷积核的点积，从而提取局部空间特征。",
     color: "blue",
