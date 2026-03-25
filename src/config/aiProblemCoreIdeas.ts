@@ -112,6 +112,15 @@ export const aiProblemCoreIdeas: Record<number, ProblemCoreIdeaConfig> = {
       "k 值控制多样性与质量的权衡",
     ],
   },
+  10014: {
+    idea: "将 logits 除以温度参数 T 后做 Softmax：T<1 放大差异使分布更尖锐（确定），T>1 压缩差异使分布更平坦（随机），通过调节 T 控制生成的多样性与质量。",
+    color: "purple",
+    features: [
+      "T<1 分布尖锐、生成确定",
+      "T>1 分布平坦、生成多样",
+      "熵 H 量化随机性变化",
+    ],
+  },
   10013: {
     idea: "从高概率 token 开始累加，选出累积概率恰好超过阈值 p 的最小 token 集合（核），在核内重归一化后采样，自适应分布集中度动态调整候选数量。",
     color: "amber",
