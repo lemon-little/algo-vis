@@ -41,6 +41,195 @@ function scoreToWidth(score: number, minScore: number, maxScore: number): number
   return Math.round(10 + ((score - minScore) / (maxScore - minScore)) * 80);
 }
 
+// ── 子组件：场景简介（最重要的教育内容）────────────────────────────
+
+function ProblemSceneCard({ beamWidth, vocabSize }: { beamWidth: number; vocabSize: number }) {
+  return (
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-4 shadow-sm">
+      {/* 解决什么问题 */}
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-base">🎯</span>
+        <h3 className="text-sm font-bold text-blue-900">束搜索解决什么问题？</h3>
+      </div>
+
+      <p className="text-xs text-gray-700 leading-relaxed mb-3">
+        AI 在生成文字时（翻译、续写、语音识别），需要<strong>一个词一个词地</strong>决策。
+        每一步都有很多可选的词，选词方式不同，最终输出的句子质量差异很大。
+      </p>
+
+      {/* 两种策略对比 */}
+      <div className="grid grid-cols-2 gap-2 mb-3">
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-2">
+          <div className="text-[11px] font-semibold text-gray-600 mb-1">❌ 贪心搜索（旧方法）</div>
+          <div className="text-[10px] text-gray-500 leading-relaxed">
+            每步只选<strong>概率最高</strong>的那个词。<br />
+            快，但容易"走进死胡同"——前面的选择可能让后续的整体句子很糟糕。
+          </div>
+        </div>
+        <div className="bg-blue-50 border border-blue-300 rounded-lg p-2">
+          <div className="text-[11px] font-semibold text-blue-700 mb-1">✅ 束搜索（本算法）</div>
+          <div className="text-[10px] text-gray-600 leading-relaxed">
+            同时保留 <strong>B={beamWidth} 条</strong>候选句子。<br />
+            每步都扩展所有候选，最终选出整体得分最高的句子。
+          </div>
+        </div>
+      </div>
+
+      {/* 具体例子 */}
+      <div className="bg-white rounded-lg border border-blue-100 p-3">
+        <div className="text-[10px] text-gray-400 mb-2">📖 具体场景：AI 正在一词一词生成英文句子</div>
+        <div className="flex flex-wrap items-start gap-2">
+          <div className="flex flex-col gap-1">
+            {[
+              { color: "bg-blue-100 text-blue-700 border-blue-200", label: "路径①", seq: "the → cat → sat ..." },
+              { color: "bg-violet-100 text-violet-700 border-violet-200", label: "路径②", seq: "a → cat → is ..." },
+              { color: "bg-amber-100 text-amber-700 border-amber-200", label: "路径③", seq: "the → cat → on ..." },
+            ].map(({ color, label, seq }) => (
+              <div key={label} className={`text-[10px] px-2 py-1 rounded border font-mono ${color}`}>
+                <span className="font-bold mr-1">{label}:</span>{seq}
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center text-gray-300 text-lg self-center">→</div>
+          <div className="bg-emerald-50 border border-emerald-200 rounded px-2 py-1 text-[10px] text-emerald-700 self-center">
+            选出整体最优的一条
+          </div>
+        </div>
+        <div className="text-[10px] text-gray-400 mt-2">
+          每一步 B={beamWidth} 条路径 × 词表{vocabSize}个词 = {beamWidth * vocabSize} 个候选，选出最优 {beamWidth} 条继续
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── 子组件："束"是什么？────────────────────────────────────────
+
+function BeamConceptCard({ beamWidth }: { beamWidth: number }) {
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
+      <div className="text-xs font-semibold text-gray-800 mb-2">💡 "束"（Beam）是什么？</div>
+      <p className="text-[11px] text-gray-600 leading-relaxed mb-2">
+        "束"就是<strong>一条正在构建中的候选句子</strong>（一条路径）。
+        束宽 B={beamWidth} 意味着我们同时追踪 {beamWidth} 条这样的路径。
+      </p>
+      <div className="text-[10px] text-gray-400 bg-gray-50 rounded p-2 border border-gray-100">
+        类比 GPS 导航：不只规划一条路，而是同时保留 {beamWidth} 条看起来最有希望的路线，
+        行驶到终点再选出最优的那条。
+      </div>
+    </div>
+  );
+}
+
+// ── 子组件：参数通俗说明 ──────────────────────────────────────────
+
+function ParameterGuide({
+  beamWidth,
+  vocabSize,
+  maxSteps,
+  alpha,
+}: {
+  beamWidth: number;
+  vocabSize: number;
+  maxSteps: number;
+  alpha: number;
+}) {
+  const params = [
+    {
+      label: "词表（vocab）",
+      value: `${vocabSize} 个词`,
+      tooltip: "AI 每步可选择的全部词。最后一个必须是结束符 <EOS>，表示句子结束。",
+      color: "text-gray-600",
+    },
+    {
+      label: "束宽 B",
+      value: String(beamWidth),
+      tooltip: `同时维护的候选句子数。B=1 退化为贪心搜索；B 越大质量越好，但计算量也越大（每步 ${beamWidth}×${vocabSize}=${beamWidth * vocabSize} 个候选）。`,
+      color: "text-blue-600",
+    },
+    {
+      label: "最大步数",
+      value: `${maxSteps} 步`,
+      tooltip: "最多生成几个词（即输出句子的最大长度）。遇到 <EOS> 会提前结束。",
+      color: "text-gray-600",
+    },
+    {
+      label: "长度惩罚 α",
+      value: String(alpha),
+      tooltip: `防止模型偏爱短句（短句的累积 log 概率往往更高）。α=0 完全不惩罚，α=1 完全按长度校正。当前 α=${alpha}：适中惩罚，鼓励生成合理长度的句子。`,
+      color: "text-orange-600",
+    },
+  ];
+
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
+      <div className="text-xs font-semibold text-gray-800 mb-2">🔧 参数说明</div>
+      <div className="grid grid-cols-2 gap-2">
+        {params.map(({ label, value, tooltip, color }) => (
+          <div key={label} className="text-[10px]">
+            <div className={`font-semibold mb-0.5 ${color}`}>
+              {label} = <span className="font-mono">{value}</span>
+            </div>
+            <div className="text-gray-400 leading-relaxed">{tooltip}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── 子组件：输入/输出说明 ─────────────────────────────────────────
+
+function InputOutputCard({ vocab, beamWidth }: { vocab: string[]; beamWidth: number }) {
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
+      <div className="text-xs font-semibold text-gray-800 mb-2">📥 输入 / 📤 输出</div>
+      <div className="grid grid-cols-2 gap-3 text-[10px]">
+        <div>
+          <div className="text-blue-600 font-semibold mb-1">输入</div>
+          <div className="space-y-1 text-gray-500">
+            <div>• <strong>词表</strong>：可生成的词 → [{vocab.slice(0, 3).join(", ")}...]</div>
+            <div>• <strong>束宽 B={beamWidth}</strong>：同时保留几条路径</div>
+            <div>• <strong>语言模型</strong>（模拟）：给每个词打概率分</div>
+          </div>
+        </div>
+        <div>
+          <div className="text-emerald-600 font-semibold mb-1">输出</div>
+          <div className="space-y-1 text-gray-500">
+            <div>• <strong>最优句子</strong>：整体概率最高的单词序列</div>
+            <div>• <strong>候选排名</strong>：所有完成的路径，按分数排序</div>
+            <div>• 遇到 <strong>&lt;EOS&gt;</strong> 标记一条路径完成</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── 子组件：分数通俗说明 ─────────────────────────────────────────
+
+function ScoreExplainCard({ alpha }: { alpha: number }) {
+  return (
+    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+      <div className="text-[11px] font-semibold text-amber-800 mb-1">📊 分数是什么意思？</div>
+      <div className="text-[10px] text-gray-600 leading-relaxed space-y-1">
+        <div>
+          <strong>log 概率</strong>（log P）：模型对每个词的置信度，取对数后变成负数（越接近 0 表示概率越高）。
+          把每步的 log 概率<strong>相加</strong>得到整条路径的累积分数。
+        </div>
+        {alpha > 0 && (
+          <div>
+            <strong>归一化分数</strong>：累积 log 概率 ÷ 长度惩罚因子，让长句和短句可以公平比较。
+          </div>
+        )}
+        <div className="text-amber-700 bg-amber-100 rounded px-2 py-1 mt-1">
+          例：log P = −2.3 比 log P = −5.1 好（更接近 0 = 模型更确信）
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── 子组件：单条 Beam 卡片 ─────────────────────────────────────────
 
 function BeamCard({
@@ -70,19 +259,22 @@ function BeamCard({
         <div className="flex items-center gap-1.5">
           <span className={`w-2 h-2 rounded-full shrink-0 ${color.dot}`} />
           <span className={`text-[10px] font-semibold ${color.text}`}>
-            {isGreedy ? "贪心（对比）" : `Beam ${idx + 1}`}
+            {isGreedy ? "贪心路径（对比）" : `路径 ${idx + 1}（Beam ${idx + 1}）`}
             {isBest && <span className="ml-1 text-emerald-600">★ 最优</span>}
           </span>
         </div>
         {showScore && (
-          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${color.badge}`}>
-            {beam.normScore.toFixed(3)}
-          </span>
+          <div className="flex items-center gap-1">
+            <span className="text-[9px] text-gray-400">得分</span>
+            <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${color.badge}`}>
+              {beam.normScore.toFixed(3)}
+            </span>
+          </div>
         )}
       </div>
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-wrap gap-1 items-center">
         {beam.tokens.length === 0 ? (
-          <span className="text-[11px] text-gray-400 italic">（空序列）</span>
+          <span className="text-[11px] text-gray-400 italic">（起点：空序列）</span>
         ) : (
           beam.tokens.map((tok, i) => (
             <span
@@ -98,12 +290,13 @@ function BeamCard({
           ))
         )}
         {beam.isFinished && (
-          <span className="text-[10px] text-emerald-600 self-center">✓EOS</span>
+          <span className="text-[10px] text-emerald-600 self-center font-semibold">✓ 已完成</span>
         )}
       </div>
       {showScore && (
         <div className="mt-1.5 text-[10px] text-gray-400 font-mono">
-          log P = {beam.logProb.toFixed(3)}
+          累积 log P = {beam.logProb.toFixed(3)}
+          <span className="ml-2 text-gray-300">（越接近 0 越好）</span>
         </div>
       )}
     </div>
@@ -140,13 +333,15 @@ function CandidateTable({
       <table className="w-full text-[11px]">
         <thead>
           <tr className="text-gray-400 border-b border-gray-100">
-            <th className="text-left py-1 pr-2 font-normal">父 Beam</th>
-            <th className="text-left py-1 pr-2 font-normal">扩展 Token</th>
+            <th className="text-left py-1 pr-2 font-normal">来自路径</th>
+            <th className="text-left py-1 pr-2 font-normal">扩展后的句子</th>
             <th className="text-right py-1 pr-2 font-normal">
-              <InlineMath math="\log P(\text{tok})" />
+              <span title="这一步选的词的置信度（越接近0越好）">当前词 log P</span>
             </th>
-            <th className="text-right py-1 pr-2 font-normal">累积分数</th>
-            <th className="text-left py-1 font-normal">分数条</th>
+            <th className="text-right py-1 pr-2 font-normal">
+              <span title="累积得分（越高越好）">路径总得分</span>
+            </th>
+            <th className="text-left py-1 font-normal">得分条</th>
           </tr>
         </thead>
         <tbody>
@@ -170,11 +365,11 @@ function CandidateTable({
               >
                 <td className="py-1 pr-2">
                   <span className={`text-[10px] px-1.5 py-0.5 rounded ${color.badge}`}>
-                    B{cand.parentBeamIdx + 1}
+                    路径{cand.parentBeamIdx + 1}
                   </span>
                 </td>
                 <td className="py-1 pr-2 font-mono">
-                  <span className="text-gray-500 text-[10px]">{parentSeq.split(" ").slice(0, -1).join(" ")} </span>
+                  <span className="text-gray-400 text-[10px]">{parentSeq.split(" ").slice(0, -1).join(" ")} </span>
                   <span className={`font-bold ${isSelected ? "text-emerald-700" : "text-gray-800"}`}>
                     {cand.token}
                   </span>
@@ -186,7 +381,7 @@ function CandidateTable({
                   <span className={isSelected ? "text-emerald-700" : "text-gray-600"}>
                     {cand.newNormScore.toFixed(3)}
                   </span>
-                  {isSelected && <span className="ml-1 text-emerald-500 text-[9px]">✓</span>}
+                  {isSelected && <span className="ml-1 text-emerald-500 text-[9px]">✓ 保留</span>}
                 </td>
                 <td className="py-1">
                   <div className="h-3 w-24 bg-gray-100 rounded overflow-hidden">
@@ -205,9 +400,12 @@ function CandidateTable({
       </table>
       {candidates.length > 12 && (
         <p className="text-[10px] text-gray-400 mt-1">
-          共 {candidates.length} 个候选，仅展示前 12 个（按分数降序）
+          共 {candidates.length} 个候选，仅展示前 12 个（按得分降序）
         </p>
       )}
+      <div className="mt-2 text-[10px] text-gray-400 bg-gray-50 rounded px-2 py-1">
+        绿色高亮 = 被选中保留的路径；灰色淡化 = 被淘汰的路径
+      </div>
     </div>
   );
 }
@@ -232,8 +430,8 @@ function BeamTreePanel({
           const color = BEAM_COLORS[bi % BEAM_COLORS.length]!;
           return (
             <div key={bi} className="flex items-center gap-0">
-              <span className={`text-[10px] w-14 shrink-0 font-semibold ${color.text}`}>
-                B{bi + 1}
+              <span className={`text-[10px] w-16 shrink-0 font-semibold ${color.text}`}>
+                路径{bi + 1}
               </span>
               <div className="flex items-center gap-0">
                 {beam.tokens.map((tok, ti) => (
@@ -261,7 +459,7 @@ function BeamTreePanel({
         })}
         {greedyTokens.length > 0 && (
           <div className="flex items-center gap-0 border-t border-dashed border-gray-200 pt-2 mt-1">
-            <span className="text-[10px] w-14 shrink-0 text-gray-400 font-semibold">贪心</span>
+            <span className="text-[10px] w-16 shrink-0 text-gray-400 font-semibold">贪心路径</span>
             <div className="flex items-center gap-0">
               {greedyTokens.map((tok, ti) => (
                 <div key={ti} className="flex items-center">
@@ -274,6 +472,7 @@ function BeamTreePanel({
                 </div>
               ))}
             </div>
+            <span className="ml-2 text-[10px] text-gray-400">（每步只选最高概率词）</span>
           </div>
         )}
       </div>
@@ -292,27 +491,32 @@ function StepProgress({
   total: number;
   phase: string;
 }) {
-  const phaseLabel: Record<string, string> = {
-    init: "初始化",
-    expand: "扩展",
-    score: "评分",
-    prune: "剪枝",
-    complete: "完成",
+  const phaseInfo: Record<string, { label: string; desc: string }> = {
+    init:     { label: "初始化",  desc: "从空序列出发，准备开始" },
+    expand:   { label: "扩展",    desc: "每条路径尝试所有词" },
+    score:    { label: "评分",    desc: "计算每个候选的累积分数" },
+    prune:    { label: "剪枝",    desc: `只保留最优 ${total} 条路径` },
+    complete: { label: "完成",    desc: "选出最优句子" },
   };
+  const info = phaseInfo[phase] ?? { label: phase, desc: "" };
+
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-[11px] text-gray-500">
-        步骤 {current}/{total}
-      </span>
-      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-blue-400 rounded-full transition-all duration-300"
-          style={{ width: `${(current / total) * 100}%` }}
-        />
+    <div className="space-y-1">
+      <div className="flex items-center gap-2">
+        <span className="text-[11px] text-gray-500">第 {current}/{total} 步</span>
+        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-blue-400 rounded-full transition-all duration-300"
+            style={{ width: `${(current / total) * 100}%` }}
+          />
+        </div>
+        <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold">
+          {info.label}
+        </span>
       </div>
-      <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold">
-        {phaseLabel[phase] ?? phase}
-      </span>
+      {info.desc && (
+        <div className="text-[10px] text-gray-400 text-right">{info.desc}</div>
+      )}
     </div>
   );
 }
@@ -350,19 +554,39 @@ function BeamSearchVisualizer() {
         },
 
         inputTypes: [
-          { type: "string", key: "vocab",     label: "词表（逗号分隔，最后一项为EOS）" },
-          { type: "number", key: "beamWidth", label: "束宽 B（1~4）" },
-          { type: "number", key: "maxSteps",  label: "最大步数（1~6）" },
-          { type: "number", key: "alpha",     label: "长度惩罚 α（0~1）" },
-          { type: "number", key: "seed",      label: "随机种子" },
+          { type: "string", key: "vocab",     label: "候选词表（逗号分隔，最后一项必须是 <EOS> 结束符）" },
+          { type: "number", key: "beamWidth", label: "束宽 B：同时保留的候选路径数（1~4，1=贪心搜索）" },
+          { type: "number", key: "maxSteps",  label: "最大步数：最多生成几个词（1~6）" },
+          { type: "number", key: "alpha",     label: "长度惩罚 α（0=不惩罚短句，1=完全按长度校正）" },
+          { type: "number", key: "seed",      label: "随机种子（改变此值可模拟不同的语言模型分布）" },
         ],
 
         inputFields: [
-          { type: "string", key: "vocab",     label: "词表（逗号分隔，最后一项为EOS）", placeholder: DEFAULT_VOCAB },
-          { type: "number", key: "beamWidth", label: "束宽 B（1~4）",                  placeholder: String(DEFAULT_BEAM_WIDTH) },
-          { type: "number", key: "maxSteps",  label: "最大步数（1~6）",                 placeholder: String(DEFAULT_MAX_STEPS) },
-          { type: "number", key: "alpha",     label: "长度惩罚 α（0~1）",              placeholder: String(DEFAULT_ALPHA) },
-          { type: "number", key: "seed",      label: "随机种子",                       placeholder: String(DEFAULT_SEED) },
+          {
+            type: "string", key: "vocab",
+            label: "候选词表（逗号分隔，最后一项是结束符）",
+            placeholder: DEFAULT_VOCAB,
+          },
+          {
+            type: "number", key: "beamWidth",
+            label: "束宽 B（同时保留的路径数，1~4）",
+            placeholder: String(DEFAULT_BEAM_WIDTH),
+          },
+          {
+            type: "number", key: "maxSteps",
+            label: "最大步数（输出最多几个词，1~6）",
+            placeholder: String(DEFAULT_MAX_STEPS),
+          },
+          {
+            type: "number", key: "alpha",
+            label: "长度惩罚 α（0~1，防止模型偏爱短句）",
+            placeholder: String(DEFAULT_ALPHA),
+          },
+          {
+            type: "number", key: "seed",
+            label: "随机种子（改变可得到不同示例）",
+            placeholder: String(DEFAULT_SEED),
+          },
         ],
 
         testCases: [
@@ -371,11 +595,11 @@ function BeamSearchVisualizer() {
             value: { vocab: DEFAULT_VOCAB, beamWidth: 3, maxSteps: 4, alpha: DEFAULT_ALPHA, seed: DEFAULT_SEED },
           },
           {
-            label: "贪心对比（B=1）",
+            label: "B=1 退化为贪心",
             value: { vocab: DEFAULT_VOCAB, beamWidth: 1, maxSteps: 4, alpha: 0, seed: DEFAULT_SEED },
           },
           {
-            label: "宽束（B=4，5步）",
+            label: "宽束 B=4（质量更高）",
             value: { vocab: "I,am,a,cat,dog,mat,<EOS>", beamWidth: 4, maxSteps: 5, alpha: 0.6, seed: 7 },
           },
         ],
@@ -402,33 +626,48 @@ function BeamSearchVisualizer() {
 
           return (
             <div className="space-y-4">
-              {/* 核心思想 */}
+              {/* ═══ 核心思想 ═══ */}
               {coreIdea && <CoreIdeaBox {...coreIdea} />}
 
-              {/* 标题 + 公式 */}
-              <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-                <div className="flex items-start justify-between flex-wrap gap-3">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-semibold text-gray-900">束搜索（Beam Search）</h3>
+              {/* ═══ 场景简介（FIRST！） ═══ */}
+              <ProblemSceneCard beamWidth={beamWidth} vocabSize={vocab.length} />
 
-                    {/* 核心公式 */}
-                    <div className="mt-2 text-xs text-gray-600 bg-gray-50 rounded p-2 border border-gray-100">
+              {/* ═══ "束"概念解释 ═══ */}
+              <BeamConceptCard beamWidth={beamWidth} />
+
+              {/* ═══ 输入/输出说明 ═══ */}
+              <InputOutputCard vocab={vocab} beamWidth={beamWidth} />
+
+              {/* ═══ 参数说明 ═══ */}
+              <ParameterGuide
+                beamWidth={beamWidth}
+                vocabSize={vocab.length}
+                maxSteps={maxSteps}
+                alpha={alphaLenPenalty}
+              />
+
+              {/* ═══ 核心公式（可选参考） ═══ */}
+              <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-1">
+                      核心计算公式（供参考）
+                    </h3>
+                    <div className="text-[10px] text-gray-500 mb-2">
+                      每步从"父路径累积分"+"当前词的 log 概率"得到新分数，取最高的 B 条保留：
+                    </div>
+                    <div className="text-xs text-gray-600 bg-gray-50 rounded p-2 border border-gray-100">
                       <BlockMath math={
                         `\\hat{y}_{1:T}^{(b)} = \\operatorname{top}\\text{-}B\\left\\{\\log P(y_t \\mid y_{<t}) + \\text{score}_{t-1}^{(b)}\\right\\}`
                       } />
                     </div>
-
-                    {/* 长度惩罚 */}
-                    <div className="mt-1 text-[11px] text-gray-500">
-                      归一化分数：
-                      <InlineMath math={`\\tilde{s} = \\frac{\\log P}{lp(T,\\alpha)},\\quad lp(T,\\alpha)=\\frac{(5+T)^\\alpha}{6^\\alpha}`} />
-                    </div>
-                    <p className="text-[11px] text-gray-400 mt-1">
-                      α = {alphaLenPenalty}（0 = 不惩罚，1 = 完全惩罚）；词表大小 = {vocab.length}
-                    </p>
+                    {alphaLenPenalty > 0 && (
+                      <div className="mt-1 text-[10px] text-gray-500">
+                        归一化（防止偏短）：
+                        <InlineMath math={`\\tilde{s} = \\frac{\\log P}{lp(T,\\alpha)},\\quad lp(T,\\alpha)=\\frac{(5+T)^\\alpha}{6^\\alpha}`} />
+                      </div>
+                    )}
                   </div>
-
-                  {/* 参数 badge */}
                   <div className="flex flex-col items-end gap-1 shrink-0">
                     <span className="text-xs px-3 py-1 rounded-full font-semibold bg-blue-100 text-blue-700">
                       B = {beamWidth}
@@ -447,26 +686,24 @@ function BeamSearchVisualizer() {
                     <StepProgress current={step} total={maxSteps} phase={phase} />
                   </div>
                 )}
-
-                {/* 束搜索 vs 贪心对比说明 */}
-                <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
-                  <div className="bg-blue-50 border border-blue-200 rounded p-2">
-                    <div className="font-semibold text-blue-700 mb-1">束搜索（本题）</div>
-                    <div className="text-gray-600">同时维护 <strong>B 条</strong>路径，避免局部最优，质量更高</div>
-                  </div>
-                  <div className="bg-gray-50 border border-gray-200 rounded p-2">
-                    <div className="font-semibold text-gray-500 mb-1">贪心搜索（对比）</div>
-                    <div className="text-gray-400">每步只保留 <strong>1 条</strong>路径，速度快但容易陷入局部最优</div>
-                  </div>
-                </div>
               </div>
+
+              {/* ═══ 分数说明 ═══ */}
+              {phase !== "init" && (
+                <ScoreExplainCard alpha={alphaLenPenalty} />
+              )}
 
               {/* ═══ 当前 Beam 状态 ═══ */}
               {beams.length > 0 && (
                 <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-                  <h4 className="text-sm font-semibold text-gray-800 mb-3">
-                    {phase === "complete" ? "最终序列排名" : `活跃 Beam（${beams.length} 条）`}
+                  <h4 className="text-sm font-semibold text-gray-800 mb-1">
+                    {phase === "complete" ? "最终序列排名" : `活跃路径（${beams.length} 条候选句子）`}
                   </h4>
+                  {phase !== "complete" && (
+                    <p className="text-[10px] text-gray-400 mb-3">
+                      这是当前正在维护的 {beams.length} 条候选路径，每一条都是一个"半成品句子"
+                    </p>
+                  )}
                   <div className="space-y-2">
                     {beams.map((beam, bi) => (
                       <BeamCard
@@ -486,15 +723,12 @@ function BeamSearchVisualizer() {
                 <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                   <h4 className="text-sm font-semibold text-gray-800 mb-1">
                     {phase === "prune"
-                      ? `候选剪枝：保留 top-${beamWidth}（绿色高亮）`
-                      : `候选评分：所有扩展候选`}
+                      ? `剪枝：从所有候选中保留最优 ${beamWidth} 条路径（绿色）`
+                      : `评分：计算每个候选路径的分数`}
                   </h4>
                   <p className="text-[11px] text-gray-400 mb-3">
-                    累积分数 ={" "}
-                    <InlineMath math="\text{score}_{t-1} + \log P(y_t \mid y_{<t})" />
-                    {alphaLenPenalty > 0 && (
-                      <span>，除以长度惩罚 <InlineMath math="lp(T, \alpha)" /></span>
-                    )}
+                    分数 = 父路径分数 + 新词的 log P{alphaLenPenalty > 0 ? " ÷ 长度惩罚" : ""}。
+                    分数越高（越接近 0），代表这条路径越有前途。
                   </p>
                   <CandidateTable
                     candidates={candidates}
@@ -508,14 +742,14 @@ function BeamSearchVisualizer() {
               {/* ═══ 搜索树可视化 ═══ */}
               {showTree && (
                 <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-                  <h4 className="text-sm font-semibold text-gray-800 mb-3">
-                    搜索路径追踪
-                    {greedyTokens.length > 0 && (
-                      <span className="text-[11px] text-gray-400 ml-2 font-normal">
-                        （虚线：贪心路径，仅供对比）
-                      </span>
-                    )}
+                  <h4 className="text-sm font-semibold text-gray-800 mb-1">
+                    路径追踪（所有路径的当前状态）
                   </h4>
+                  {greedyTokens.length > 0 && (
+                    <p className="text-[11px] text-gray-400 mb-3">
+                      虚线分隔的"贪心路径"是每步只选最高概率词时的结果，用于与束搜索对比。
+                    </p>
+                  )}
                   <BeamTreePanel
                     beams={beams}
                     greedyTokens={greedyTokens}
@@ -526,9 +760,12 @@ function BeamSearchVisualizer() {
               {/* ═══ 完成结果 ═══ */}
               {showFinished && finishedBeams.length > 0 && (
                 <div className="bg-emerald-50 rounded-lg border border-emerald-200 p-4">
-                  <h4 className="text-sm font-semibold text-emerald-800 mb-3">
-                    束搜索完成 ✓ — 最终候选排名
+                  <h4 className="text-sm font-semibold text-emerald-800 mb-1">
+                    束搜索完成 ✓ — 输出结果
                   </h4>
+                  <p className="text-[11px] text-gray-500 mb-3">
+                    以下是所有完成的路径，按得分从高到低排列。★ 最优就是束搜索的最终输出。
+                  </p>
 
                   <div className="space-y-2 mb-4">
                     {finishedBeams.map((beam, bi) => (
@@ -550,36 +787,41 @@ function BeamSearchVisualizer() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3 text-xs">
+                  <div className="grid grid-cols-3 gap-3 text-xs mb-3">
                     <div className="bg-white border border-emerald-200 rounded-lg p-3 text-center">
                       <div className="text-blue-600 font-semibold text-base">{beamWidth}</div>
-                      <div className="text-gray-500">束宽 B</div>
+                      <div className="text-gray-500 text-[10px]">束宽 B（同时探索的路径数）</div>
                     </div>
                     <div className="bg-white border border-emerald-200 rounded-lg p-3 text-center">
                       <div className="text-emerald-700 font-mono font-bold text-base">
                         {bestBeam?.normScore.toFixed(3)}
                       </div>
-                      <div className="text-gray-500">最优归一化分数</div>
+                      <div className="text-gray-500 text-[10px]">最优路径得分（归一化）</div>
                     </div>
                     <div className="bg-white border border-emerald-200 rounded-lg p-3 text-center">
                       <div className="text-gray-700 font-semibold text-base">{finishedBeams.length}</div>
-                      <div className="text-gray-500">完成序列数</div>
+                      <div className="text-gray-500 text-[10px]">完成的路径总数</div>
                     </div>
                   </div>
 
                   {bestBeam && (
-                    <p className="text-xs text-emerald-700 mt-3">
-                      最优序列：
-                      <strong className="font-mono">{bestBeam.tokens.join(" → ")}</strong>
-                      （归一化分数 = {bestBeam.normScore.toFixed(4)}）。
+                    <div className="bg-white rounded-lg border border-emerald-200 p-3">
+                      <div className="text-[11px] font-semibold text-emerald-700 mb-1">最终输出</div>
+                      <div className="text-xs text-gray-700">
+                        束搜索选出的最优句子：
+                        <strong className="font-mono text-emerald-700 mx-1">{bestBeam.tokens.join(" → ")}</strong>
+                        （得分 = {bestBeam.normScore.toFixed(4)}）
+                      </div>
                       {greedyTokens.length > 0 && (
-                        <span className="text-gray-600">
-                          {" "}贪心序列：{greedyTokens.join(" → ")}。
-                          束搜索通过同时探索 {beamWidth} 条路径，{" "}
-                          {bestBeam.normScore !== 0 ? "找到了更优的生成结果。" : "在此示例中结果相近。"}
-                        </span>
+                        <div className="text-xs text-gray-500 mt-1">
+                          贪心搜索的结果：
+                          <span className="font-mono text-gray-600 mx-1">{greedyTokens.join(" → ")}</span>
+                          {bestBeam.tokens.join(",") !== greedyTokens.join(",")
+                            ? "（不同！束搜索找到了更好的路径）"
+                            : "（此示例中两者相同）"}
+                        </div>
                       )}
-                    </p>
+                    </div>
                   )}
                 </div>
               )}
