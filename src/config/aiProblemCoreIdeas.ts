@@ -94,6 +94,15 @@ export const aiProblemCoreIdeas: Record<number, ProblemCoreIdeaConfig> = {
       "Seq2Seq 任务的核心",
     ],
   },
+  10011: {
+    idea: "每步将已生成序列送入模型，取最后位置 logits 经温度缩放 Softmax 得到概率分布，采样选出下一 token 并追加到序列，循环直到生成 <EOS> 或达到最大步数。",
+    color: "purple",
+    features: [
+      "逐 token 自回归循环生成",
+      "温度 T 控制分布尖锐度",
+      "<EOS> 标记终止生成",
+    ],
+  },
   10026: {
     idea: "卷积核在输入特征图上滑动，每个位置计算局部区域与卷积核的点积，从而提取局部空间特征。",
     color: "blue",
