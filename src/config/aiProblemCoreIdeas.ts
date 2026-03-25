@@ -103,6 +103,15 @@ export const aiProblemCoreIdeas: Record<number, ProblemCoreIdeaConfig> = {
       "<EOS> 标记终止生成",
     ],
   },
+  10012: {
+    idea: "对模型 logits 经温度缩放后取全分布 Softmax，保留概率最高的 k 个 token 并重归一化，在这 k 个候选中按概率随机采样，兼顾生成质量与多样性。",
+    color: "amber",
+    features: [
+      "截断低概率候选防止噪声输出",
+      "重归一化保证 top-k 概率之和为 1",
+      "k 值控制多样性与质量的权衡",
+    ],
+  },
   10026: {
     idea: "卷积核在输入特征图上滑动，每个位置计算局部区域与卷积核的点积，从而提取局部空间特征。",
     color: "blue",
