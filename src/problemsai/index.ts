@@ -20,6 +20,7 @@ export const aiVisualizerRegistry: Record<number, ComponentType> = {
   10027: lazy(() => import("./Problemai27/MaxPoolingVisualizer")),
   10028: lazy(() => import("./Problemai28/BatchNormVisualizer")),
   10029: lazy(() => import("./Problemai29/ResidualConnectionVisualizer")),
+  10016: lazy(() => import("./Problemai16/TransformerEncoderVisualizer")),
   10030: lazy(() => import("./Problemai30/NMSVisualizer")),
 };
 

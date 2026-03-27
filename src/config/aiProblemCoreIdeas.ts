@@ -184,6 +184,15 @@ export const aiProblemCoreIdeas: Record<number, ProblemCoreIdeaConfig> = {
       "去除冗余检测结果",
     ],
   },
+  10016: {
+    idea: "Encoder 层将多头自注意力（捕获全局依赖）与前馈网络（逐位置非线性变换）串联，每个子层后用残差连接+LayerNorm 稳定训练，堆叠多层即可获得深层语义表示。",
+    color: "blue",
+    features: [
+      "MHSA 并行捕获多类型依赖",
+      "FFN 提供逐 token 非线性变换",
+      "残差+LayerNorm 保障训练稳定",
+    ],
+  },
 };
 
 /**
