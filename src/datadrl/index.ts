@@ -8,6 +8,7 @@ import { continuousActionProblems } from "./continuous";
 import { multiAgentProblems } from "./multiagent";
 import { imitationLearningProblems } from "./imitation";
 import { llmRLProblems } from "./llmrl";
+import { verlProblems } from "./verl";
 
 export const drlProblems: DRLProblem[] = [
   ...overviewProblems,
@@ -19,6 +20,7 @@ export const drlProblems: DRLProblem[] = [
   ...multiAgentProblems,
   ...imitationLearningProblems,
   ...llmRLProblems,
+  ...verlProblems,
 ];
 
 export function getDrlProblemById(id: number): DRLProblem | undefined {

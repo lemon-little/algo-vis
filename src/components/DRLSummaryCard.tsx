@@ -18,6 +18,7 @@ const CHAPTERS: DRLChapter[] = [
   { label: "六、连续动作空间", category: DRLCategory.CONTINUOUS_ACTION },
   { label: "七、多智能体强化学习", category: DRLCategory.MULTI_AGENT },
   { label: "八、模仿学习", category: DRLCategory.IMITATION_LEARNING },
+  { label: "九、verl 框架", category: DRLCategory.VERL_FRAMEWORK },
 ];
 
 interface DRLSummaryCardProps {
