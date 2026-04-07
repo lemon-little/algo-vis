@@ -48,6 +48,18 @@ export const aiVisualizerRegistry: Record<number, ComponentType> = {
   10045: lazy(() => import("./Problemai45/MachineTranslationVisualizer")),
   10046: lazy(() => import("./Problemai46/POSTaggingVisualizer")),
   10047: lazy(() => import("./Problemai47/DependencyParsingVisualizer")),
+  10048: lazy(() => import("./Problemai48/SpectrogramVisualizer")),
+  10049: lazy(() => import("./Problemai49/MelSpectrogramVisualizer")),
+  10050: lazy(() => import("./Problemai50/MFCCVisualizer")),
+  10051: lazy(() => import("./Problemai51/VADVisualizer")),
+  10052: lazy(() => import("./Problemai52/ASRVisualizer")),
+  10053: lazy(() => import("./Problemai53/TTSVisualizer")),
+  10054: lazy(() => import("./Problemai54/SpeakerIdVisualizer")),
+  10055: lazy(() => import("./Problemai55/SpeechEnhancementVisualizer")),
+  10056: lazy(() => import("./Problemai56/PhonemeRecognitionVisualizer")),
+  10057: lazy(() => import("./Problemai57/ProsodyVisualizer")),
+  10058: lazy(() => import("./Problemai58/SpeechSegmentationVisualizer")),
+  10059: lazy(() => import("./Problemai59/VoiceCloningVisualizer")),
 };
 
 export function hasAiVisualizer(problemId: number): boolean {
