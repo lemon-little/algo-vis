@@ -54,7 +54,6 @@ function buildAttentionMatrix(phonemes: TTSPhoneme[]): number[][] {
   const P = phonemes.length;
   const matrix: number[][] = [];
 
-  let frameIdx = 0;
   for (let pi = 0; pi < P; pi++) {
     for (let fi = 0; fi < phonemes[pi].duration; fi++) {
       const row = new Array(P).fill(0.02);
@@ -63,7 +62,6 @@ function buildAttentionMatrix(phonemes: TTSPhoneme[]): number[][] {
       if (pi > 0) row[pi - 1] = 0.08;
       if (pi < P - 1) row[pi + 1] = 0.05;
       matrix.push(row);
-      frameIdx++;
     }
   }
   // Pad/trim to totalFrames
