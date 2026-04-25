@@ -135,7 +135,7 @@ function MultimodalTransformerVisualizer() {
                 <BlockMath math={String.raw`H = \text{Transformer}([\text{CLS}; p_1, \ldots, p_L; \text{SEP}; e_1, \ldots, e_T; \text{SEP}])`} />
                 <BlockMath math={String.raw`\text{CrossAttn}(Q_T, K_I, V_I) = \text{softmax}\left(\frac{Q_T K_I^\top}{\sqrt{d}}\right)V_I`} />
                 <p className="text-xs text-gray-500 mt-1">
-                  d_model = {sample.dModel}　|　L={sample.patches.length}（图像 patch）　|　T={sample.tokens.length - 1}（文本 token）
+                  d_model = {sample.dModel}{" | L="}{sample.patches.length}（图像 patch）{" | T="}{sample.tokens.length - 1}（文本 token）
                 </p>
               </div>
 

@@ -173,7 +173,7 @@ function TextToImageVisualizer() {
                 <BlockMath math={String.raw`\tilde{\epsilon}_\theta = \epsilon_\theta(z_t, t, \varnothing) + w\cdot\left[\epsilon_\theta(z_t, t, c) - \epsilon_\theta(z_t, t, \varnothing)\right]`} />
                 <p className="text-xs text-gray-500 mt-1">
                   Prompt: <span className="font-mono text-gray-800">"{sample.prompt}"</span>
-                  　|　步数 T={T}　|　引导强度 w={guidance}
+                  {" | 步数 T="}{T}{" | 引导强度 w="}{guidance}
                 </p>
               </div>
 
