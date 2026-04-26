@@ -1,7 +1,8 @@
 import { ConfigurableVisualizer } from "@/components/visualizers/ConfigurableVisualizer";
 import { CoreIdeaBox } from "@/components/visualizers/CoreIdeaBox";
+import { IntuitionFlow } from "@/components/visualizers/IntuitionFlow";
 import { ProblemInput } from "@/types/visualization";
-import { BlockMath } from "react-katex";
+import { BlockMath, InlineMath } from "react-katex";
 import "katex/dist/katex.min.css";
 import { getAiProblemCoreIdea } from "@/config/aiProblemCoreIdeas";
 import { generateT2ISteps, T2ISample } from "./algorithm";
@@ -161,6 +162,82 @@ function TextToImageVisualizer() {
           return (
             <div className="space-y-4">
               {coreIdea && <CoreIdeaBox {...coreIdea} />}
+
+              <IntuitionFlow
+                chapters={[
+                  {
+                    number: "1",
+                    icon: "🤔",
+                    title: "说\"一只猫\"，凭空画出一张图？",
+                    accent: "rose",
+                    body: (
+                      <>
+                        <p>
+                          一张图有成千上万个像素，可能的像素组合是<b>天文数字</b>。
+                          直接"让模型输出所有像素"几乎没法学。怎么才能可控地生成符合描述的图？
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "2",
+                    icon: "💡",
+                    title: "反向思考：从噪声里\"雕\"出一张图",
+                    accent: "amber",
+                    body: (
+                      <>
+                        <p>
+                          <b>扩散模型的魔法</b>：先假设一张真实的图 <InlineMath math="z_0" /> 经过 T 步逐渐加噪，
+                          最终变成纯高斯噪声 <InlineMath math="z_T" />——这个过程是<b>已知的</b>。
+                        </p>
+                        <p>
+                          那么反过来：<b>从纯噪声 <InlineMath math="z_T" /> 出发，一步步"去噪"，就能还原（或生成）一张真实图</b>！
+                          就像米开朗基罗说的"雕像本就在石头里，我只是去掉多余的部分"。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "3",
+                    icon: "🔑",
+                    title: "\"啊哈！\"——用文字控制每一步去噪",
+                    accent: "purple",
+                    body: (
+                      <>
+                        <p>
+                          训练一个<b>神经网络 UNet</b> <InlineMath math="\epsilon_\theta" />，
+                          让它学会在每步 t 预测<b>"这里应该减掉多少噪声"</b>。
+                          关键是：它的输入除了当前噪声图 <InlineMath math="z_t" /> 和时间 t，还有<b>文字嵌入 c</b>。
+                        </p>
+                        <p>
+                          换句话说，UNet 在学"<b>给定文字条件下，这张噪声图里埋着一只什么</b>"。
+                          文字不同，它就把噪声雕向不同形状。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "4",
+                    icon: "🧩",
+                    title: "Classifier-Free Guidance：强化文字的声音",
+                    accent: "emerald",
+                    body: (
+                      <>
+                        <p>
+                          实战中会同时算两次：一次<b>有文字条件</b>的噪声 <InlineMath math="\epsilon_\theta(z_t, t, c)" />，
+                          一次<b>无条件</b>的 <InlineMath math="\epsilon_\theta(z_t, t, \varnothing)" />。
+                        </p>
+                        <p>
+                          用引导强度 <b>w</b> 把两者"外推"：
+                          <InlineMath math="\tilde{\epsilon} = \epsilon_\varnothing + w(\epsilon_c - \epsilon_\varnothing)" />。
+                          w 越大 → 图像越"服从"文字，但多样性下降；w 太小 → 图多样但不贴近文字。
+                          最后 VAE 解码器把去噪后的潜在 <InlineMath math="z_0" /> 转回像素。
+                        </p>
+                      </>
+                    ),
+                  },
+                ]}
+              />
 
               <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                 <div className="flex items-center justify-between flex-wrap gap-2 mb-2">

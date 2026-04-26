@@ -1,5 +1,6 @@
 import { ConfigurableVisualizer } from "@/components/visualizers/ConfigurableVisualizer";
 import { CoreIdeaBox } from "@/components/visualizers/CoreIdeaBox";
+import { IntuitionFlow } from "@/components/visualizers/IntuitionFlow";
 import { ProblemInput } from "@/types/visualization";
 import { InlineMath, BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
@@ -380,6 +381,89 @@ function CLIPVisualizer() {
           return (
             <div className="space-y-4">
               {coreIdea && <CoreIdeaBox {...coreIdea} />}
+
+              {/* 3B1B 风格叙事：从零理解 CLIP */}
+              <IntuitionFlow
+                chapters={[
+                  {
+                    number: "1",
+                    icon: "🤔",
+                    title: "假如你要做一个图片搜索引擎……",
+                    accent: "rose",
+                    body: (
+                      <>
+                        <p>
+                          用户输入 "a red car"，你想返回一张<b>红色汽车</b>的图片。
+                          问题是：<b>计算机怎么知道这段文字和这张图片"说的是同一件事"？</b>
+                        </p>
+                        <p className="text-slate-600">
+                          文字是 token 序列，图片是像素网格——它们根本不是同一种东西。
+                          即使是同一只猫，描述可以是 "a cat"、"a kitty"、"a small feline"，
+                          写法千变万化。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "2",
+                    icon: "💡",
+                    title: "关键想法：让它们说同一种\"语言\"",
+                    accent: "amber",
+                    body: (
+                      <>
+                        <p>
+                          如果我们能把任何图片翻译成一个 d 维向量、任何文字也翻译成一个 d 维向量，
+                          那就<b>可以直接比较它们</b>（算余弦相似度）。
+                        </p>
+                        <p>
+                          这需要两个"翻译器"——图像编码器 <InlineMath math="f_{img}" /> 和文本编码器
+                          {" "}<InlineMath math="f_{txt}" />。关键是：<b>两个翻译器的输出要落到同一个向量空间</b>，
+                          让"🐱 的向量" 和 '"a cat" 的向量' 几乎相等。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "3",
+                    icon: "🔑",
+                    title: "\"啊哈！\"——怎么训练这两个翻译器？",
+                    accent: "purple",
+                    body: (
+                      <>
+                        <p>
+                          想象你一次拿到 <b>N 对</b>图文（比如 N=4）：{" "}
+                          🐱↔"a cat"、🐶↔"a dog"、🚗↔"a car"、🌳↔"a tree"。
+                          <b>你早就知道谁配对谁</b>。
+                        </p>
+                        <p>
+                          那就让模型<b>做个小测验</b>：给它一张 🐱，让它在 4 段文字里选出 "a cat"。
+                          选对 → 奖励；选错 → 惩罚。同样反过来：给 "a cat"，在 4 张图里选出 🐱。
+                          <b>这就是"对比学习"</b>——对比正样本（对角线）和负样本（其它位置）。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "4",
+                    icon: "🧩",
+                    title: "这怎么变成一个公式？",
+                    accent: "emerald",
+                    body: (
+                      <>
+                        <p>
+                          把所有图像向量 <InlineMath math="I_1..I_N" /> 和文本向量 <InlineMath math="T_1..T_N" /> 两两算内积，
+                          得到一个 <b>N×N 的相似度矩阵 S</b>。对角线 <InlineMath math="s_{ii}" /> 是正样本分数、其它是负样本分数。
+                        </p>
+                        <p>
+                          对每一行做 Softmax — 得到"给定图 i，它对应文 j 的概率"。
+                          训练目标就是<b>让这个概率分布把全部质量压在对角线上</b>（即用交叉熵最小化）。
+                          这就是下面公式里 <InlineMath math="\mathcal{L}" /> 的来源！
+                        </p>
+                      </>
+                    ),
+                  },
+                ]}
+              />
 
               {/* 标题 + 阶段 */}
               <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">

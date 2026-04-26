@@ -1,5 +1,6 @@
 import { ConfigurableVisualizer } from "@/components/visualizers/ConfigurableVisualizer";
 import { CoreIdeaBox } from "@/components/visualizers/CoreIdeaBox";
+import { IntuitionFlow } from "@/components/visualizers/IntuitionFlow";
 import { ProblemInput } from "@/types/visualization";
 import { InlineMath, BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
@@ -131,6 +132,82 @@ function MultimodalDialogueVisualizer() {
           return (
             <div className="space-y-4">
               {coreIdea && <CoreIdeaBox {...coreIdea} />}
+
+              <IntuitionFlow
+                chapters={[
+                  {
+                    number: "1",
+                    icon: "🤔",
+                    title: "给 AI 一张图，和它\"聊\"这张图",
+                    accent: "rose",
+                    body: (
+                      <>
+                        <p>
+                          你拍了一张餐厅照片发给 AI，问"这是哪家店？"；它回答后你又问"酒是什么颜色？"。
+                          这需要 AI <b>同时处理图像、记住对话历史、回答当前问题</b>——
+                          这就是 GPT-4V、Claude Vision、LLaVA 在做的事。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "2",
+                    icon: "💡",
+                    title: "关键思路：把图变成 LLM 能读的\"一段话\"",
+                    accent: "amber",
+                    body: (
+                      <>
+                        <p>
+                          LLM（大语言模型）只会处理 token。所以先用<b>视觉编码器</b>（如 CLIP ViT）
+                          把图变成一串"视觉 token" V，再用一个<b>投影层</b>把它对齐到 LLM 的词嵌入空间。
+                        </p>
+                        <p>
+                          从 LLM 的角度看，图就是<b>一段特殊的"话"</b>被拼在 prompt 前面：
+                          <InlineMath math="[V, H_1, H_2, \ldots, Q]" />——视觉 + 历史 + 问题。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "3",
+                    icon: "🔑",
+                    title: "\"啊哈！\"——Attention 让生成时随时回头\"看图\"",
+                    accent: "purple",
+                    body: (
+                      <>
+                        <p>
+                          LLM 生成每个词时，都会用<b>自注意力</b>扫一遍上下文。
+                          它会<b>自动</b>把注意力权重分给图像 token、对话历史、当前问题。
+                        </p>
+                        <p>
+                          生成 "red" 这个词时，模型会发现<b>图里的酒杯区域</b>提供了关键信息，
+                          于是对那里的视觉 token 给高权重——
+                          这就是 AI 能"引用图像细节"的机制。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "4",
+                    icon: "🧩",
+                    title: "自回归逐词生成 → 完整回复",
+                    accent: "emerald",
+                    body: (
+                      <>
+                        <p>
+                          和普通 LLM 一样，每步预测<b>下一个 token 的概率分布</b>
+                          <InlineMath math="p(y_t|y_{<t}, I, H)" />，采样或贪心取一个，
+                          追加到序列里，再预测下一个——直到遇到 &lt;EOS&gt;。
+                        </p>
+                        <p className="text-slate-600">
+                          多轮对话时，每轮的问答都会被加入历史，下轮<b>AI 能记住之前聊过什么</b>。
+                          这种"视觉 + 历史 + LLM"的架构已成为多模态对话的主流范式。
+                        </p>
+                      </>
+                    ),
+                  },
+                ]}
+              />
 
               <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                 <div className="flex items-center justify-between flex-wrap gap-2 mb-2">

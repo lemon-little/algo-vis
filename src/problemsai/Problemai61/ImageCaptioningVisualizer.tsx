@@ -1,5 +1,6 @@
 import { ConfigurableVisualizer } from "@/components/visualizers/ConfigurableVisualizer";
 import { CoreIdeaBox } from "@/components/visualizers/CoreIdeaBox";
+import { IntuitionFlow } from "@/components/visualizers/IntuitionFlow";
 import { ProblemInput } from "@/types/visualization";
 import { InlineMath, BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
@@ -124,6 +125,86 @@ function ImageCaptioningVisualizer() {
           return (
             <div className="space-y-4">
               {coreIdea && <CoreIdeaBox {...coreIdea} />}
+
+              <IntuitionFlow
+                chapters={[
+                  {
+                    number: "1",
+                    icon: "🤔",
+                    title: "给一张图，让模型\"说\"出描述？",
+                    accent: "rose",
+                    body: (
+                      <>
+                        <p>
+                          人看到 🐱 坐在窗台上，会自然说出 "A cat is sitting on the windowsill"。
+                          可模型要怎么做？<b>它既要"看懂"图，又要"组织语言"</b>——两个难题凑在一起。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "2",
+                    icon: "💡",
+                    title: "拆成两步：看懂 → 逐字说",
+                    accent: "amber",
+                    body: (
+                      <>
+                        <p>
+                          先用 <b>CNN</b>（Encoder）把图变成一堆区域特征 <InlineMath math="V = \{v_1, \ldots, v_L\}" />，
+                          就像给图贴了 L 张"便签"（本例 L=9，把图切成 3×3 的网格）。
+                        </p>
+                        <p>
+                          再用 <b>RNN/Transformer</b>（Decoder）像写作一样<b>一个词一个词地生成</b>：
+                          从 &lt;START&gt; 开始，每步看上一个词和图的便签，预测下一个词，直到 &lt;END&gt;。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "3",
+                    icon: "🔑",
+                    title: "\"啊哈！\"——每个词关注图里不同的位置",
+                    accent: "purple",
+                    body: (
+                      <>
+                        <p>
+                          这里有个很自然的问题：<b>说 "cat" 时</b>模型应该"看"哪里？——显然应该看<b>猫的位置</b>。
+                          说 "windowsill" 时则应该看<b>窗台</b>的位置。
+                        </p>
+                        <p>
+                          所以每生成一个词，都让模型<b>重新算一次注意力权重</b>
+                          {" "}<InlineMath math="\alpha_t" />，
+                          用这些权重对 9 张便签加权求和，得到"当前最相关的视觉信息" <InlineMath math="c_t" />。
+                          这就是 <b>Show, Attend and Tell</b> 的核心！
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "4",
+                    icon: "🧩",
+                    title: "公式其实就是两行",
+                    accent: "emerald",
+                    body: (
+                      <>
+                        <p>
+                          <b>① 算权重</b>：
+                          <InlineMath math="\alpha_t = \text{softmax}(f_{att}(h_{t-1}, V))" />
+                          —— 问题：上一步隐状态看 V 的哪里？
+                        </p>
+                        <p>
+                          <b>② 算上下文</b>：
+                          <InlineMath math="c_t = \sum_i \alpha_{t,i} \cdot v_i" />
+                          —— 加权平均，得到当前该看的视觉信息，拼到 Decoder 里预测下一词。
+                        </p>
+                        <p className="text-slate-600">
+                          下方的黄色高亮就是 <InlineMath math="\alpha_t" />——随着生成进度，你会看到它在图上"移动"。
+                        </p>
+                      </>
+                    ),
+                  },
+                ]}
+              />
 
               <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                 <div className="flex items-center justify-between flex-wrap gap-2 mb-2">

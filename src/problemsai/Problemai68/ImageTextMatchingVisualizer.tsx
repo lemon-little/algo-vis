@@ -1,7 +1,8 @@
 import { ConfigurableVisualizer } from "@/components/visualizers/ConfigurableVisualizer";
 import { CoreIdeaBox } from "@/components/visualizers/CoreIdeaBox";
+import { IntuitionFlow } from "@/components/visualizers/IntuitionFlow";
 import { ProblemInput } from "@/types/visualization";
-import { BlockMath } from "react-katex";
+import { BlockMath, InlineMath } from "react-katex";
 import "katex/dist/katex.min.css";
 import { getAiProblemCoreIdea } from "@/config/aiProblemCoreIdeas";
 import { generateITMSteps, ITMItem } from "./algorithm";
@@ -115,6 +116,82 @@ function ImageTextMatchingVisualizer() {
           return (
             <div className="space-y-4">
               {coreIdea && <CoreIdeaBox {...coreIdea} />}
+
+              <IntuitionFlow
+                chapters={[
+                  {
+                    number: "1",
+                    icon: "🤔",
+                    title: "一张图 + 一段文字，它们\"配\"吗？",
+                    accent: "rose",
+                    body: (
+                      <>
+                        <p>
+                          这是多模态里最基础的问题：给你 🐱 和 "a cat"，匹配。
+                          给你 🐱 和 "a red car"，不匹配。<b>模型怎么自动判断？</b>
+                        </p>
+                        <p className="text-slate-600">
+                          这个小能力是<b>一切跨模态应用的地基</b>——检索、生成、过滤都建在上面。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "2",
+                    icon: "💡",
+                    title: "把它们变成向量，算夹角",
+                    accent: "amber",
+                    body: (
+                      <>
+                        <p>
+                          用 CLIP 之类的模型，把图和文字都映射成<b>同一空间</b>的向量 <InlineMath math="I" />、<InlineMath math="T" />。
+                          关键观察：语义相近的两个向量，<b>方向相近</b>（夹角小），
+                          远离的则夹角大。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "3",
+                    icon: "🔑",
+                    title: "\"啊哈！\"——余弦相似度 = 夹角余弦",
+                    accent: "purple",
+                    body: (
+                      <>
+                        <p>
+                          两个向量的夹角 θ 可以用<b>点积除以模长</b>计算：
+                          <InlineMath math="\cos\theta = (I \cdot T)/(\|I\|\|T\|)" />，值在 [−1, 1]。
+                        </p>
+                        <p>
+                          • <span className="text-emerald-700 font-semibold">cos ≈ 1</span>：完全同向，语义高度匹配<br />
+                          • cos ≈ 0：几乎正交，不相关<br />
+                          • <span className="text-rose-700 font-semibold">cos ≈ −1</span>：方向相反，含义对立
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "4",
+                    icon: "🧩",
+                    title: "画一条线——阈值决定\"算不算匹配\"",
+                    accent: "emerald",
+                    body: (
+                      <>
+                        <p>
+                          只有余弦值还不够——你得定一个<b>阈值 τ</b>。
+                          sim ≥ τ → 匹配；sim &lt; τ → 不匹配。
+                        </p>
+                        <p>
+                          τ 的选择决定了系统的<b>严格程度</b>：
+                          τ 高 → 只认高度相似的（精确率高、召回率低）；
+                          τ 低 → 宽容（召回率高、精确率低）。
+                          实际系统常用 PR 曲线/AUC 来挑最优阈值。
+                        </p>
+                      </>
+                    ),
+                  },
+                ]}
+              />
 
               <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                 <div className="flex items-center justify-between flex-wrap gap-2 mb-2">

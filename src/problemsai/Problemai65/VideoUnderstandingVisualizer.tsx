@@ -1,5 +1,6 @@
 import { ConfigurableVisualizer } from "@/components/visualizers/ConfigurableVisualizer";
 import { CoreIdeaBox } from "@/components/visualizers/CoreIdeaBox";
+import { IntuitionFlow } from "@/components/visualizers/IntuitionFlow";
 import { ProblemInput } from "@/types/visualization";
 import { InlineMath, BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
@@ -125,6 +126,84 @@ function VideoUnderstandingVisualizer() {
           return (
             <div className="space-y-4">
               {coreIdea && <CoreIdeaBox {...coreIdea} />}
+
+              <IntuitionFlow
+                chapters={[
+                  {
+                    number: "1",
+                    icon: "🤔",
+                    title: "单张照片 vs 一段视频，差在哪？",
+                    accent: "rose",
+                    body: (
+                      <>
+                        <p>
+                          给你一张 🏃 的照片，你只能说"有个人"。但一段视频里，你能看到<b>他在跑</b>——
+                          这个"动作"不在任何单帧里，而在<b>帧与帧之间的变化</b>中。
+                        </p>
+                        <p className="text-slate-600">
+                          所以视频理解的核心矛盾是：<b>如何同时捕捉"空间"（每帧内容）和"时间"（帧间变化）</b>？
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "2",
+                    icon: "💡",
+                    title: "两个维度，分别处理",
+                    accent: "amber",
+                    body: (
+                      <>
+                        <p>
+                          <b>空间维度</b>：对每一帧用 2D CNN 或 ViT 提取特征 <InlineMath math="f_i" />，
+                          捕获"这一帧里有什么物体、在哪里"。
+                        </p>
+                        <p>
+                          <b>时间维度</b>：把连续帧的特征沿<b>时间轴</b>融合——最简单是平均池化，
+                          进阶用 3D 卷积、RNN、或 Video Transformer（沿时间做注意力）。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "3",
+                    icon: "🔑",
+                    title: "\"啊哈！\"——动作是时空联合模式",
+                    accent: "purple",
+                    body: (
+                      <>
+                        <p>
+                          举个例子：<b>"挥手"</b>这个动作。
+                          单帧看：手在头上（t=0）、手在右（t=1）、手在左（t=3）……
+                          <b>每一帧单独都不能说明是"挥手"</b>。
+                        </p>
+                        <p>
+                          但当模型把这些帧<b>连起来看</b>，它会注意到手在<b>左右周期性摆动</b>——
+                          这个<b>时空联合模式</b>就是"挥手"的特征。
+                          所以好的视频模型学的是 <InlineMath math="h_{st} = \text{Fuse}(f_1, f_2, \ldots, f_N)" />。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "4",
+                    icon: "🧩",
+                    title: "最后一步：分类器给答案",
+                    accent: "emerald",
+                    body: (
+                      <>
+                        <p>
+                          时空特征 <InlineMath math="h_{st}" /> 过一个线性层 + Softmax，
+                          在候选动作集合（running / waving / clapping / ...）里选概率最高的一个。
+                        </p>
+                        <p className="text-slate-600">
+                          这个架构能迁移到：动作识别（UCF-101）、事件检测（监控视频）、视频描述（Video Captioning），
+                          甚至抖音的视频内容标签。
+                        </p>
+                      </>
+                    ),
+                  },
+                ]}
+              />
 
               <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                 <div className="flex items-center justify-between flex-wrap gap-2 mb-2">

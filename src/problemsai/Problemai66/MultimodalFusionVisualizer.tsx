@@ -1,5 +1,6 @@
 import { ConfigurableVisualizer } from "@/components/visualizers/ConfigurableVisualizer";
 import { CoreIdeaBox } from "@/components/visualizers/CoreIdeaBox";
+import { IntuitionFlow } from "@/components/visualizers/IntuitionFlow";
 import { ProblemInput } from "@/types/visualization";
 import { InlineMath, BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
@@ -112,6 +113,87 @@ function MultimodalFusionVisualizer() {
           return (
             <div className="space-y-4">
               {coreIdea && <CoreIdeaBox {...coreIdea} />}
+
+              <IntuitionFlow
+                chapters={[
+                  {
+                    number: "1",
+                    icon: "🤔",
+                    title: "三个模态的特征，怎么\"合\"成一个？",
+                    accent: "rose",
+                    body: (
+                      <>
+                        <p>
+                          看视频时，你的大脑同时收到<b>画面（图像）、字幕（文本）、声音（音频）</b>——
+                          它们<b>互相补充</b>：光看画面不知道在说什么，光听声音不知道谁在说。
+                        </p>
+                        <p>
+                          如果每个模态都有自己的特征向量，<b>要怎么把它们合并成一个统一表示</b>去做下游任务？
+                          这个"合并"叫<b>多模态融合</b>——方法不止一种，各有优劣。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "2",
+                    icon: "💡",
+                    title: "最朴素：直接拼接（Early Fusion）",
+                    accent: "blue",
+                    body: (
+                      <>
+                        <p>
+                          把三个向量<b>首尾相连</b>：
+                          <InlineMath math="z = [f_{img}; f_{text}; f_{audio}]" />，维度变成 3d。
+                          然后加一个线性层<b>把维度压回 d</b>，让下游网络一起处理。
+                        </p>
+                        <p className="text-slate-600">
+                          👍 简单、让模态从一开始就交互。
+                          👎 所有模态按固定比例合并，无法强调"这次该多听音频"。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "3",
+                    icon: "🔑",
+                    title: "反向做：各自决策再投票（Late Fusion）",
+                    accent: "amber",
+                    body: (
+                      <>
+                        <p>
+                          让每个模态<b>独立完成任务</b>（比如分类），得到各自的预测概率，
+                          最后按<b>固定权重</b> w 做加权平均：
+                          <InlineMath math="z = \sum_m w_m \cdot f_m" />。
+                        </p>
+                        <p className="text-slate-600">
+                          👍 鲁棒：某个模态坏了不至于全挂。
+                          👎 模态之间<b>不共享特征</b>，失去细粒度交互。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "4",
+                    icon: "🧩",
+                    title: "\"啊哈！\"——让模型自己决定谁重要（Attention Fusion）",
+                    accent: "emerald",
+                    body: (
+                      <>
+                        <p>
+                          为什么要<b>固定</b>权重？不同问题里不同模态的重要性不一样——
+                          问"天空什么颜色"应该重图像，问"歌手是谁"应该重音频。
+                        </p>
+                        <p>
+                          用<b>注意力机制</b>动态算权重：
+                          <InlineMath math="\alpha_m = \text{softmax}(q \cdot k_m / \sqrt{d})" />，
+                          然后 <InlineMath math="z = \sum_m \alpha_m \cdot v_m" />。
+                          每次输入不同，权重也不同——<b>自适应融合</b>。现代 Transformer 里几乎都用这种。
+                        </p>
+                      </>
+                    ),
+                  },
+                ]}
+              />
 
               <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                 <div className="flex items-center justify-between flex-wrap gap-2 mb-2">

@@ -1,5 +1,6 @@
 import { ConfigurableVisualizer } from "@/components/visualizers/ConfigurableVisualizer";
 import { CoreIdeaBox } from "@/components/visualizers/CoreIdeaBox";
+import { IntuitionFlow } from "@/components/visualizers/IntuitionFlow";
 import { ProblemInput } from "@/types/visualization";
 import { InlineMath, BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
@@ -126,6 +127,87 @@ function VLPVisualizer() {
           return (
             <div className="space-y-4">
               {coreIdea && <CoreIdeaBox {...coreIdea} />}
+
+              <IntuitionFlow
+                chapters={[
+                  {
+                    number: "1",
+                    icon: "🤔",
+                    title: "为什么要\"预训练\"视觉-语言模型？",
+                    accent: "rose",
+                    body: (
+                      <>
+                        <p>
+                          每个下游任务（VQA、caption、retrieval）都从零开始训练模型，
+                          <b>数据量不够、参数共享不了、效果也差</b>。
+                          就像人学外语：先练<b>听说读写基本功</b>，再做具体任务更容易。
+                        </p>
+                        <p className="text-slate-600">
+                          视觉-语言预训练（VLP）就是让一个大模型在海量<b>图文对</b>上学"基本功"，
+                          然后各下游任务都微调它。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "2",
+                    icon: "💡",
+                    title: "靠\"自监督任务\"——不需要人工标注",
+                    accent: "amber",
+                    body: (
+                      <>
+                        <p>
+                          互联网上有海量<b>图片 + 对应 caption</b>的天然配对（比如 alt-text）。
+                          但这种数据<b>没有"答案标签"</b>。怎么学？
+                        </p>
+                        <p>
+                          答：<b>自己造任务</b>——
+                          遮住文本里某个词让模型猜（MLM），打乱图文让模型判断是否匹配（ITM），
+                          拉近匹配对推远不匹配对（ITC）。<b>一份数据，三种信号</b>。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "3",
+                    icon: "🔑",
+                    title: "\"啊哈！\"——MLM 强迫模型\"看图说话\"",
+                    accent: "purple",
+                    body: (
+                      <>
+                        <p>
+                          把文本里的 "cat" 换成 [MASK]：<b>"A [MASK] sitting on a chair"</b>。
+                          光看剩下的文字猜 [MASK] 可能是 cat / dog / man……很难确定。
+                        </p>
+                        <p>
+                          但如果同时<b>给模型看到图里是只猫</b>，
+                          它才能自信地填上 "cat"。
+                          这就迫使模型<b>必须建立图像-文字对齐</b>才能完成任务——这就是 MLM 在 VLP 里的魔力。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "4",
+                    icon: "🧩",
+                    title: "多任务联合训练",
+                    accent: "emerald",
+                    body: (
+                      <>
+                        <p>
+                          同时优化：
+                          <InlineMath math="\mathcal{L}_{total} = \mathcal{L}_{MLM} + \mathcal{L}_{ITM} + \mathcal{L}_{ITC}" />。
+                          三个任务从不同角度约束模型，<b>互补</b>。
+                        </p>
+                        <p>
+                          预训练完成后，模型像瑞士军刀：冻结参数 + 加个小分类头，就能做 VQA、caption、retrieval。
+                          BLIP、ALIGN、CoCa 都是这条路线。
+                        </p>
+                      </>
+                    ),
+                  },
+                ]}
+              />
 
               <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                 <div className="flex items-center justify-between flex-wrap gap-2 mb-2">

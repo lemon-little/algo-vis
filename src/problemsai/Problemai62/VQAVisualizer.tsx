@@ -1,7 +1,8 @@
 import { ConfigurableVisualizer } from "@/components/visualizers/ConfigurableVisualizer";
 import { CoreIdeaBox } from "@/components/visualizers/CoreIdeaBox";
+import { IntuitionFlow } from "@/components/visualizers/IntuitionFlow";
 import { ProblemInput } from "@/types/visualization";
-import { BlockMath } from "react-katex";
+import { BlockMath, InlineMath } from "react-katex";
 import "katex/dist/katex.min.css";
 import { getAiProblemCoreIdea } from "@/config/aiProblemCoreIdeas";
 import { generateVQASteps, VQAScene } from "./algorithm";
@@ -158,6 +159,84 @@ function VQAVisualizer() {
           return (
             <div className="space-y-4">
               {coreIdea && <CoreIdeaBox {...coreIdea} />}
+
+              <IntuitionFlow
+                chapters={[
+                  {
+                    number: "1",
+                    icon: "🤔",
+                    title: "给 AI 看图 + 问问题 = ？",
+                    accent: "rose",
+                    body: (
+                      <>
+                        <p>
+                          你指着一张厨房照片问："<b>冰箱什么颜色？</b>"
+                          要回答这个问题，AI 既要<b>读懂问题</b>（"冰箱""颜色"是关键词），
+                          又要<b>在图里找到冰箱</b>，最后<b>识别它的颜色</b>。
+                        </p>
+                        <p className="text-slate-600">
+                          这是一个<b>跨模态推理</b>任务——任何一边没"对齐"，就答不对。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "2",
+                    icon: "💡",
+                    title: "让两个模态\"对话\"",
+                    accent: "amber",
+                    body: (
+                      <>
+                        <p>
+                          先分别理解两边：
+                          视觉编码器把图切成<b>若干区域</b>（冰箱、灶台、水槽……），
+                          文本编码器把问题变成 token 序列。
+                        </p>
+                        <p>
+                          然后关键一步：让问题里的 token <b>去"查问"</b>图的每个区域——
+                          "冰箱" 这个词应该<b>指向</b>图里的冰箱位置；"颜色" 应该<b>连接</b>对应区域的颜色属性。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "3",
+                    icon: "🔑",
+                    title: "\"啊哈！\"——跨模态注意力做这件事",
+                    accent: "purple",
+                    body: (
+                      <>
+                        <p>
+                          注意力的本质是：<b>Query 询问 Key，决定关注哪些 Value</b>。
+                          在 VQA 里，让问题（Q）询问图像区域（K），得到<b>"问题每个词应该看图的哪里"</b>的权重矩阵。
+                        </p>
+                        <p>
+                          同时反过来：让图像区域（Q）询问问题（K），得到<b>"图像每个区域应该关注哪些问题词"</b>。
+                          两个方向的信息交互——<b>双向交叉注意力</b>——让模态真正"对话"起来。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "4",
+                    icon: "🧩",
+                    title: "融合 + 分类 = 答案",
+                    accent: "emerald",
+                    body: (
+                      <>
+                        <p>
+                          把"看到的东西" <InlineMath math="v^*" /> 和"问的内容" <InlineMath math="q^*" /> 做逐元素乘
+                          <InlineMath math="m = v^* \odot q^*" />——相当于让视觉和语言的强特征"同时存在"才激活。
+                        </p>
+                        <p>
+                          最后一层 Softmax 在候选答案集合（white/red/blue/...）里选概率最高的那个。
+                          <b>图、文字、推理——三合一</b>，就能回答 "white" 了。
+                        </p>
+                      </>
+                    ),
+                  },
+                ]}
+              />
 
               <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                 <div className="flex items-center justify-between flex-wrap gap-2 mb-2">

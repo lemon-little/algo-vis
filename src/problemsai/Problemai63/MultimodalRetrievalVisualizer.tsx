@@ -1,7 +1,8 @@
 import { ConfigurableVisualizer } from "@/components/visualizers/ConfigurableVisualizer";
 import { CoreIdeaBox } from "@/components/visualizers/CoreIdeaBox";
+import { IntuitionFlow } from "@/components/visualizers/IntuitionFlow";
 import { ProblemInput } from "@/types/visualization";
-import { BlockMath } from "react-katex";
+import { BlockMath, InlineMath } from "react-katex";
 import "katex/dist/katex.min.css";
 import { getAiProblemCoreIdea } from "@/config/aiProblemCoreIdeas";
 import {
@@ -132,6 +133,78 @@ function MultimodalRetrievalVisualizer() {
           return (
             <div className="space-y-4">
               {coreIdea && <CoreIdeaBox {...coreIdea} />}
+
+              <IntuitionFlow
+                chapters={[
+                  {
+                    number: "1",
+                    icon: "🤔",
+                    title: "搜\"一辆红色的车\"，怎么返回对应的图？",
+                    accent: "rose",
+                    body: (
+                      <>
+                        <p>
+                          这是<b>跨模态检索</b>：查询是文字，候选是图片（或反过来）。
+                          传统搜索能做"文→文"（关键词匹配），但"文→图"就没法直接比——<b>文字和像素根本不是一种东西</b>。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "2",
+                    icon: "💡",
+                    title: "先把一切搬到同一个\"空间\"",
+                    accent: "amber",
+                    body: (
+                      <>
+                        <p>
+                          用预训练的跨模态模型（比如 <b>CLIP</b>）把每张图和每段文字都编码成 d 维向量。
+                          <b>关键：这些向量属于同一个空间</b>——语义相近的图文会落在相近位置。
+                        </p>
+                        <p>
+                          于是"文→图"检索就变成了<b>"在空间里找最近邻"</b>，是一个纯几何问题。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "3",
+                    icon: "🔑",
+                    title: "\"啊哈！\"——用余弦相似度衡量\"近\"",
+                    accent: "purple",
+                    body: (
+                      <>
+                        <p>
+                          两个向量的"靠近"用<b>余弦相似度</b>衡量：
+                          <InlineMath math="\cos(q, e) = q \cdot e / (\|q\|\,\|e\|)" />，
+                          值在 [−1, 1]，越大越相似。
+                        </p>
+                        <p>
+                          L2 归一化后 <InlineMath math="\|q\|=\|e\|=1" />，相似度就直接等于点积 <InlineMath math="q \cdot e" />——
+                          计算非常快，甚至可以用 <b>FAISS / ScaNN</b> 做亿级向量的近邻搜索。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "4",
+                    icon: "🧩",
+                    title: "排序取 Top-K，完事！",
+                    accent: "emerald",
+                    body: (
+                      <>
+                        <p>
+                          对数据库所有条目算一遍相似度，按分数<b>降序排序</b>，取前 K 个返回给用户。
+                          这就是你看到的"红色汽车图片"排在搜索结果最上面的原因。
+                        </p>
+                        <p className="text-slate-600">
+                          实际系统中还会加入重排、过滤等步骤，但<b>共享嵌入空间 + 向量检索</b>始终是核心。
+                        </p>
+                      </>
+                    ),
+                  },
+                ]}
+              />
 
               <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                 <div className="flex items-center justify-between flex-wrap gap-2 mb-2">

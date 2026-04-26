@@ -1,5 +1,6 @@
 import { ConfigurableVisualizer } from "@/components/visualizers/ConfigurableVisualizer";
 import { CoreIdeaBox } from "@/components/visualizers/CoreIdeaBox";
+import { IntuitionFlow } from "@/components/visualizers/IntuitionFlow";
 import { ProblemInput } from "@/types/visualization";
 import { InlineMath, BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
@@ -144,6 +145,84 @@ function VisualGroundingVisualizer() {
           return (
             <div className="space-y-4">
               {coreIdea && <CoreIdeaBox {...coreIdea} />}
+
+              <IntuitionFlow
+                chapters={[
+                  {
+                    number: "1",
+                    icon: "🤔",
+                    title: "说\"红色的车\"，在图里框出来给我看",
+                    accent: "rose",
+                    body: (
+                      <>
+                        <p>
+                          图里有 🚗（红）、🚙（蓝）、🚕（黄）三辆车。我说 "the red car"，
+                          你要<b>画一个矩形框</b>把那辆红的圈出来。这叫<b>视觉定位（Visual Grounding）</b>。
+                        </p>
+                        <p className="text-slate-600">
+                          它和普通目标检测的区别：普通检测是"找所有车"，定位是"找<b>文字描述的那辆</b>"——
+                          需要跨模态理解。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "2",
+                    icon: "💡",
+                    title: "分两步：先给候选，再选最好的",
+                    accent: "amber",
+                    body: (
+                      <>
+                        <p>
+                          第一步用预训练的<b>区域提议网络 (RPN)</b> 在图里生成 N 个候选框 {"{b₁, ..., bₙ}"}，
+                          每个框可能圈住一个物体。
+                        </p>
+                        <p>
+                          第二步从这 N 个里<b>选一个最匹配文字的</b>——这就把问题转成了<b>多选题</b>：
+                          "哪个框是 the red car？"
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "3",
+                    icon: "🔑",
+                    title: "\"啊哈！\"——匹配分 = cos(文字, 区域特征)",
+                    accent: "purple",
+                    body: (
+                      <>
+                        <p>
+                          对每个候选框提取<b>区域特征</b> <InlineMath math="r_i" />，
+                          文字查询编码为 <InlineMath math="q" />，
+                          两者算余弦相似度：<InlineMath math="s_i = \cos(q, r_i)" />。
+                        </p>
+                        <p>
+                          分数高 = 这个框的<b>内容</b>和<b>文字描述</b>语义接近。
+                          比如 "red car" 的向量和红车框的视觉向量会有高相似度、和蓝车框相似度低。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "4",
+                    icon: "🧩",
+                    title: "Softmax + argmax = 框出来",
+                    accent: "emerald",
+                    body: (
+                      <>
+                        <p>
+                          对所有分数做 Softmax，得到每个框<b>是目标</b>的概率。
+                          取概率最高的那个 <InlineMath math="\hat{b} = \arg\max_i p_i" />——就是答案。
+                        </p>
+                        <p className="text-slate-600">
+                          现代模型（MDETR、GLIP）把候选框和匹配一起端到端训练，
+                          甚至<b>直接从图像+文字预测坐标</b>——更强大但思路一致。
+                        </p>
+                      </>
+                    ),
+                  },
+                ]}
+              />
 
               <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                 <div className="flex items-center justify-between flex-wrap gap-2 mb-2">

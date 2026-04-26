@@ -1,5 +1,6 @@
 import { ConfigurableVisualizer } from "@/components/visualizers/ConfigurableVisualizer";
 import { CoreIdeaBox } from "@/components/visualizers/CoreIdeaBox";
+import { IntuitionFlow } from "@/components/visualizers/IntuitionFlow";
 import { ProblemInput } from "@/types/visualization";
 import { InlineMath, BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
@@ -124,6 +125,81 @@ function MultimodalTransformerVisualizer() {
           return (
             <div className="space-y-4">
               {coreIdea && <CoreIdeaBox {...coreIdea} />}
+
+              <IntuitionFlow
+                chapters={[
+                  {
+                    number: "1",
+                    icon: "🤔",
+                    title: "一个 Transformer，能同时处理图像和文字吗？",
+                    accent: "rose",
+                    body: (
+                      <>
+                        <p>
+                          Transformer 原本是处理<b>文本</b>的——输入一串 token，输出一串 token。
+                          图像是 224×224 的像素网格，完全不是 token 序列。怎么办？
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "2",
+                    icon: "💡",
+                    title: "先把图像\"切碎\"变成 token",
+                    accent: "amber",
+                    body: (
+                      <>
+                        <p>
+                          ViT 的灵感：把图像切成 16×16 的<b>小方块（patch）</b>，
+                          每个 patch 经过线性投影，就变成了一个 d 维向量——<b>和文字 token 长得一样</b>！
+                        </p>
+                        <p>
+                          于是图像也成了"token 序列"：
+                          <InlineMath math="\text{image} \to [p_1, p_2, \ldots, p_L]" />。
+                          L 就是 patch 的数量（比如 14×14=196 个）。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "3",
+                    icon: "🔑",
+                    title: "\"啊哈！\"——既然都是 token，直接拼起来",
+                    accent: "purple",
+                    body: (
+                      <>
+                        <p>
+                          把图像 token 和文字 token <b>首尾相连</b>，再加两个特殊 token：
+                          <InlineMath math="[\text{CLS}, p_1, \ldots, p_L, \text{SEP}, e_1, \ldots, e_T, \text{SEP}]" />。
+                        </p>
+                        <p>
+                          然后扔给<b>普通的 Transformer</b>！Self-Attention 不关心 token 来自哪个模态——
+                          它会自动让图像 token 关注文本 token，反之亦然。
+                          <b>跨模态交互自然发生</b>。
+                        </p>
+                      </>
+                    ),
+                  },
+                  {
+                    number: "4",
+                    icon: "🧩",
+                    title: "[CLS] 是魔法聚合点",
+                    accent: "emerald",
+                    body: (
+                      <>
+                        <p>
+                          [CLS] token 通过 Self-Attention 能看到序列里<b>所有其它 token</b>，
+                          所以它最终的 hidden state <b>聚合了整张图 + 整段文字</b>的信息。
+                        </p>
+                        <p>
+                          任何下游任务——判断匹配、分类答案、做检索——都只需在 [CLS] 上加个小分类头即可。
+                          这就是 LXMERT、UNITER、ViLT 等模型的统一思路。
+                        </p>
+                      </>
+                    ),
+                  },
+                ]}
+              />
 
               <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                 <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
